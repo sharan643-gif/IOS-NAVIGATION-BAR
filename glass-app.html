@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Glass Music – Mobile UI</title>
+<style>
+:root{
+  --ink:#3a2a33; --ink2:#7a6670; --accent:#e5435f; --accent2:#ff8fab;
+  --glass:rgba(255,255,255,.34); --glass-b:rgba(255,255,255,.75);
+  --bg1:#fde8ef; --bg2:#f6dff5; --bg3:#ffeede;
+  --ease:cubic-bezier(.34,1.3,.5,1);
+}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Inter","Segoe UI",system-ui,sans-serif;
+  color:var(--ink);background:linear-gradient(135deg,var(--bg1),var(--bg2) 55%,var(--bg3));
+  display:grid;place-items:center;min-height:100vh;overflow:hidden;position:relative;
+}
+/* ambient pastel light */
+.orb{position:fixed;border-radius:50%;filter:blur(70px);opacity:.75;pointer-events:none;animation:float 14s ease-in-out infinite}
+.o1{width:46vmax;height:46vmax;left:-12vmax;top:-14vmax;background:#ffc2d6}
+.o2{width:40vmax;height:40vmax;right:-10vmax;bottom:-14vmax;background:#d9c6ff;animation-delay:-5s}
+.o3{width:28vmax;height:28vmax;right:18vmax;top:-8vmax;background:#ffe0c2;animation-delay:-9s}
+@keyframes float{50%{transform:translate(3vmax,2vmax) scale(1.08)}}
+
+/* phone */
+.phone{
+  position:relative;width:min(390px,92vw);height:min(820px,94vh);border-radius:54px;
+  background:linear-gradient(160deg,#fff6fa,#f7e6f6);
+  box-shadow:0 0 0 10px rgba(255,255,255,.55),0 0 0 11px rgba(255,255,255,.9),0 40px 90px -20px rgba(190,100,140,.45),0 12px 30px rgba(190,100,140,.18);
+  overflow:hidden;isolation:isolate;
+}
+.phone::before{ /* inner soft glow */
+  content:"";position:absolute;inset:0;z-index:-1;
+  background:radial-gradient(60% 40% at 20% 0%,#ffd1e1 0,transparent 70%),radial-gradient(50% 40% at 100% 55%,#e3d3ff 0,transparent 70%),radial-gradient(60% 40% at 0% 100%,#ffe6cf 0,transparent 70%);
+}
+.island{position:absolute;top:11px;left:50%;translate:-50% 0;width:112px;height:32px;border-radius:20px;background:#2a1f26;z-index:30}
+.status{position:absolute;top:14px;left:0;right:0;padding:0 34px;display:flex;justify-content:space-between;font-size:15px;font-weight:600;z-index:20}
+.status svg{height:12px;fill:var(--ink)}
+
+.screens{position:absolute;inset:0}
+.screen{position:absolute;inset:0;padding:64px 20px 130px;overflow-y:auto;scrollbar-width:none;opacity:0;transform:translateY(14px) scale(.985);pointer-events:none;transition:.45s var(--ease)}
+.screen::-webkit-scrollbar{display:none}
+.screen.on{opacity:1;transform:none;pointer-events:auto}
+
+h1{font-size:30px;letter-spacing:-.02em;font-weight:750;margin:10px 0 2px}
+.sub{color:var(--ink2);font-size:15px;margin-bottom:18px}
+h2{font-size:18px;font-weight:700;margin:22px 4px 12px;display:flex;justify-content:space-between;align-items:baseline}
+h2 a{font-size:13px;color:var(--accent);font-weight:600}
+
+.glass{
+  background:var(--glass);backdrop-filter:blur(22px) saturate(1.6);-webkit-backdrop-filter:blur(22px) saturate(1.6);
+  border:1px solid var(--glass-b);border-radius:28px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.9),inset 0 -8px 18px rgba(255,255,255,.25),0 10px 30px -10px rgba(200,110,150,.3);
+}
+.search{display:flex;align-items:center;gap:10px;padding:13px 18px;border-radius:999px;color:var(--ink2);font-size:15px;margin-bottom:6px}
+.search svg{width:18px;height:18px;stroke:var(--ink2);fill:none;stroke-width:2;stroke-linecap:round}
+
+.hero{position:relative;height:200px;border-radius:32px;overflow:hidden;padding:20px;display:flex;flex-direction:column;justify-content:flex-end;
+  background:linear-gradient(135deg,#ff9ebb,#ffc9a8 55%,#e6c9ff);box-shadow:0 18px 36px -14px rgba(229,67,95,.5)}
+.hero::before{content:"";position:absolute;width:190px;height:190px;border-radius:50%;right:-40px;top:-50px;background:radial-gradient(circle at 35% 30%,#fff9,#fff0 70%)}
+.hero .tag{position:absolute;top:16px;left:16px;font-size:12px;font-weight:600;padding:6px 12px;border-radius:99px;background:rgba(255,255,255,.55);backdrop-filter:blur(10px)}
+.hero b{font-size:24px;letter-spacing:-.01em;color:#4a2234}
+.hero span{font-size:14px;color:#6b4152;margin-top:2px}
+.play{position:absolute;right:18px;bottom:18px;width:52px;height:52px;border-radius:50%;border:1px solid #fff9;background:rgba(255,255,255,.6);backdrop-filter:blur(12px);display:grid;place-items:center;cursor:pointer;transition:.3s var(--ease);box-shadow:0 8px 20px -6px rgba(0,0,0,.2)}
+.play:active{transform:scale(.9)}
+.play svg{width:20px;fill:var(--accent);margin-left:3px}
+
+.row{display:flex;gap:14px;overflow-x:auto;padding:2px 2px 14px;margin:0 -20px;padding-left:22px;scrollbar-width:none}
+.row::-webkit-scrollbar{display:none}
+.card{flex:0 0 132px}
+.art{width:132px;height:132px;border-radius:26px;margin-bottom:8px;box-shadow:0 12px 24px -10px rgba(190,100,140,.5),inset 0 0 0 1px #fff8;position:relative;overflow:hidden}
+.art::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 25% 15%,#fffa,transparent 55%)}
+.card b{display:block;font-size:14px;font-weight:650}
+.card small{color:var(--ink2);font-size:12.5px}
+.g1{background:linear-gradient(135deg,#ffb3c7,#ffd9e4)}
+.g2{background:linear-gradient(135deg,#cdb8ff,#f2d4ff)}
+.g3{background:linear-gradient(135deg,#ffd2a8,#ffe9d2)}
+.g4{background:linear-gradient(135deg,#a8e6dc,#d6f5ee)}
+.g5{background:linear-gradient(135deg,#ffc2e8,#e3c8ff)}
+
+.list{display:flex;flex-direction:column;gap:10px}
+.item{display:flex;align-items:center;gap:14px;padding:10px 14px 10px 10px;border-radius:24px}
+.item .th{width:50px;height:50px;border-radius:16px;flex:none;box-shadow:inset 0 0 0 1px #fff9}
+.item .tx{flex:1;min-width:0}
+.item b{display:block;font-size:15px;font-weight:650}
+.item small{color:var(--ink2);font-size:13px}
+.item .dots{color:var(--ink2);font-size:20px;letter-spacing:1px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.chip{padding:9px 16px;border-radius:99px;font-size:14px;font-weight:600;cursor:pointer;transition:.25s}
+.chip.on{background:var(--accent);color:#fff;border-color:transparent;box-shadow:0 8px 18px -6px rgba(229,67,95,.6)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid2 .art{width:100%;height:auto;aspect-ratio:1}
+.live{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--accent);padding:5px 10px;border-radius:99px;background:#fff8}
+.live::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--accent);animation:pulse 1.4s infinite}
+@keyframes pulse{50%{opacity:.3;transform:scale(.7)}}
+
+/* mini player */
+.mini{position:absolute;left:16px;right:16px;bottom:112px;z-index:15;display:flex;align-items:center;gap:12px;padding:8px 14px 8px 8px;border-radius:999px}
+.mini .th{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#ff9ebb,#e6c9ff);animation:spin 12s linear infinite;box-shadow:inset 0 0 0 1px #fff9}
+@keyframes spin{to{rotate:360deg}}
+.mini .tx{flex:1;font-size:14px}.mini small{display:block;color:var(--ink2);font-size:12px}
+.mini svg{width:20px;fill:var(--ink)}
+
+/* ========= liquid glass tab bar ========= */
+.tabbar{will-change:transform;position:absolute;left:16px;right:16px;bottom:22px;height:76px;z-index:25;padding:6px}
+.bar-bg{position:absolute;inset:0;border-radius:999px;
+  background:rgba(255,255,255,.2);backdrop-filter:blur(14px) saturate(1.7);-webkit-backdrop-filter:blur(14px) saturate(1.7);
+  border:1px solid rgba(255,255,255,.85);
+  box-shadow:inset 0 1px 0 #fff,inset 0 -10px 20px rgba(255,255,255,.3),0 18px 40px -12px rgba(190,100,140,.45)}
+.tabs{position:relative;display:grid;grid-template-columns:repeat(4,1fr);height:100%;touch-action:none}
+.tabs{overflow:visible}
+/* clear glass bubble: refracts the real pixels behind it (SVG displacement map) */
+.lens{position:absolute;top:0;height:100%;left:0;width:25%;z-index:2;border-radius:999px;pointer-events:none;
+  background:rgba(255,255,255,.02);
+  -webkit-backdrop-filter:url(#lg) saturate(1.4) brightness(1.02);backdrop-filter:url(#lg) saturate(1.4) brightness(1.02);
+  box-shadow:inset 0 1.5px 1px rgba(255,255,255,.95),inset 0 -2px 5px rgba(255,255,255,.55),inset 0 0 14px rgba(255,255,255,.16),inset 0 -10px 18px -8px rgba(255,140,185,.28);
+  will-change:transform,width,height}
+.lens::after{content:"";position:absolute;inset:0;border-radius:inherit;padding:1.6px;
+  background:linear-gradient(140deg,rgba(255,255,255,1),rgba(255,255,255,0) 32%,rgba(255,255,255,0) 62%,rgba(255,196,224,.95));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+.lens-shadow{position:absolute;top:0;height:100%;left:0;width:25%;z-index:1;border-radius:999px;pointer-events:none;box-shadow:0 16px 30px -10px rgba(140,60,110,.32),0 2px 6px rgba(60,20,40,.08);will-change:transform}
+.no-svg-refract .lens{-webkit-backdrop-filter:blur(5px) saturate(1.6) brightness(1.1);backdrop-filter:blur(5px) saturate(1.6) brightness(1.1)}
+.tab{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:0;background:none;cursor:pointer;
+  font:600 12.5px/1 inherit;font-family:inherit;color:#5d4a54;transition:color .25s}
+.tab svg{width:26px;height:26px;fill:#5d4a54;transition:fill .25s}
+.tab.on{color:var(--accent)}.tab.on svg{fill:var(--accent)}
+.home-ind{position:absolute;bottom:7px;left:50%;translate:-50% 0;width:134px;height:5px;border-radius:9px;background:#3a2a33;opacity:.85;z-index:30}
+
+@media (max-width:480px){body{place-items:stretch}.phone{width:100vw;height:100vh;height:100dvh;border-radius:0;box-shadow:none}.island,.status{display:none}.screen{padding-top:28px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition-duration:.01s!important}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <filter id="lg" filterUnits="objectBoundingBox" primitiveUnits="objectBoundingBox" x="0" y="0" width="1" height="1" color-interpolation-filters="sRGB">
+    <feImage id="lgMap" x="0" y="0" width="1" height="1" preserveAspectRatio="none" result="map"/>
+    <feDisplacementMap id="dR" in="SourceGraphic" in2="map" scale="40" xChannelSelector="R" yChannelSelector="G" result="r0"/>
+    <feColorMatrix in="r0" type="matrix" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" result="r"/>
+    <feDisplacementMap id="dG" in="SourceGraphic" in2="map" scale="36" xChannelSelector="R" yChannelSelector="G" result="g0"/>
+    <feColorMatrix in="g0" type="matrix" values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0" result="g"/>
+    <feDisplacementMap id="dB" in="SourceGraphic" in2="map" scale="32" xChannelSelector="R" yChannelSelector="G" result="b0"/>
+    <feColorMatrix in="b0" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0" result="b"/>
+    <feBlend in="r" in2="g" mode="screen" result="rg"/>
+    <feBlend in="rg" in2="b" mode="screen"/>
+  </filter>
+</svg>
+<div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div>
+
+<main class="phone">
+  <div class="island"></div>
+  <div class="status"><span>9:41</span>
+    <svg viewBox="0 0 66 12"><path d="M1 9h2v2H1zM5 7h2v4H5zM9 4h2v7H9zM13 1h2v10h-2z"/><path d="M26 3.5c3-2.6 7-2.6 10 0l-1.3 1.4a6.3 6.3 0 0 0-7.4 0zM28.6 6.2a3.6 3.6 0 0 1 4.8 0L31 9z"/><rect x="42" y="1" width="21" height="10" rx="3" fill="none" stroke="#3a2a33" stroke-width="1"/><rect x="43.6" y="2.6" width="15" height="6.8" rx="1.8"/></svg>
+  </div>
+
+  <div class="screens">
+    <!-- HOME -->
+    <section class="screen on" id="s0">
+      <h1>Good morning</h1><p class="sub">Pick up where you left off</p>
+      <div class="glass search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>Songs, artists, moods</div>
+      <h2>Featured</h2>
+      <div class="hero"><span class="tag">Made for you</span><b>Rosé Hour</b><span>Soft pop · 24 songs</span>
+        <div class="play"><svg viewBox="0 0 24 24"><path d="M6 4v16l14-8z"/></svg></div></div>
+      <h2>Recently played <a>See all</a></h2>
+      <div class="row">
+        <div class="card"><div class="art g1"></div><b>Blush Tapes</b><small>Mira Lane</small></div>
+        <div class="card"><div class="art g2"></div><b>Lilac Drift</b><small>Oko</small></div>
+        <div class="card"><div class="art g3"></div><b>Peach Fuzz</b><small>Sunny Day</small></div>
+      </div>
+      <h2>Quick picks</h2>
+      <div class="list">
+        <div class="glass item"><div class="th g5"></div><div class="tx"><b>Velvet Sky</b><small>Mira Lane</small></div><span class="dots">···</span></div>
+        <div class="glass item"><div class="th g4"></div><b class="tx" style="font-weight:650">Soft Static<small style="display:block;font-weight:400;color:var(--ink2)">Oko</small></b><span class="dots">···</span></div>
+      </div>
+    </section>
+
+    <!-- NEW -->
+    <section class="screen" id="s1">
+      <h1>New</h1><p class="sub">Fresh releases this week</p>
+      <div class="chips"><span class="chip glass on">All</span><span class="chip glass">Pop</span><span class="chip glass">Chill</span><span class="chip glass">Indie</span></div>
+      <h2>Just added</h2>
+      <div class="grid2">
+        <div><div class="art g1"></div><b style="font-size:14px">Cotton Candy</b><br><small style="color:var(--ink2)">Pia</small></div>
+        <div><div class="art g2"></div><b style="font-size:14px">Moonmilk</b><br><small style="color:var(--ink2)">Oko</small></div>
+        <div><div class="art g3"></div><b style="font-size:14px">Golden Hour</b><br><small style="color:var(--ink2)">Sunny Day</small></div>
+        <div><div class="art g4"></div><b style="font-size:14px">Sea Glass</b><br><small style="color:var(--ink2)">Nami</small></div>
+      </div>
+    </section>
+
+    <!-- RADIO -->
+    <section class="screen" id="s2">
+      <h1>Radio</h1><p class="sub">Live stations</p>
+      <div class="hero" style="background:linear-gradient(135deg,#d9c6ff,#ffc2e0 60%,#ffe0c2)"><span class="tag live" style="background:#fffa">Live</span><b>Dreamy FM</b><span>Lo-fi · Pastel · Chill</span>
+        <div class="play"><svg viewBox="0 0 24 24"><path d="M6 4v16l14-8z"/></svg></div></div>
+      <h2>Stations</h2>
+      <div class="list">
+        <div class="glass item"><div class="th g1"></div><div class="tx"><b>Rose Quartz</b><small>Soft pop all day</small></div><span class="live">Live</span></div>
+        <div class="glass item"><div class="th g2"></div><div class="tx"><b>Lavender Lounge</b><small>Ambient & calm</small></div><span class="live">Live</span></div>
+        <div class="glass item"><div class="th g3"></div><div class="tx"><b>Apricot Radio</b><small>Acoustic mornings</small></div><span class="live">Live</span></div>
+      </div>
+    </section>
+
+    <!-- LIBRARY -->
+    <section class="screen" id="s3">
+      <h1>Library</h1><p class="sub">Your collection</p>
+      <div class="list">
+        <div class="glass item"><div class="th g1"></div><div class="tx"><b>Playlists</b><small>12 playlists</small></div><span class="dots">›</span></div>
+        <div class="glass item"><div class="th g2"></div><div class="tx"><b>Artists</b><small>48 artists</small></div><span class="dots">›</span></div>
+        <div class="glass item"><div class="th g3"></div><div class="tx"><b>Albums</b><small>31 albums</small></div><span class="dots">›</span></div>
+        <div class="glass item"><div class="th g4"></div><div class="tx"><b>Downloaded</b><small>86 songs</small></div><span class="dots">›</span></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="glass mini">
+    <div class="th"></div>
+    <div class="tx"><b>Velvet Sky</b><small>Mira Lane</small></div>
+    <svg viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16" rx="1.5"/><rect x="14" y="4" width="4" height="16" rx="1.5"/></svg>
+  </div>
+
+  <nav class="tabbar" aria-label="Main"><div class="bar-bg"></div>
+    <div class="tabs" id="tabs">
+      <div class="lens-shadow" id="lensSh"></div><div class="lens" id="lens"></div>
+      <button class="tab on" data-i="0"><svg viewBox="0 0 24 24"><path d="M12 2.8 3.2 10a1.3 1.3 0 0 0-.5 1V20a1.5 1.5 0 0 0 1.5 1.5H9v-6h6v6h4.8a1.5 1.5 0 0 0 1.5-1.5v-9a1.3 1.3 0 0 0-.5-1z"/></svg>Home</button>
+      <button class="tab" data-i="1"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="8.2" height="8.2" rx="2.4"/><rect x="12.8" y="3" width="8.2" height="8.2" rx="2.4"/><rect x="3" y="12.8" width="8.2" height="8.2" rx="2.4"/><rect x="12.8" y="12.8" width="8.2" height="8.2" rx="2.4"/></svg>New</button>
+      <button class="tab" data-i="2"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"/><path d="M8.2 8.2a5.4 5.4 0 0 0 0 7.6l-1.3 1.3a7.3 7.3 0 0 1 0-10.2zM15.8 8.2l1.3-1.3a7.3 7.3 0 0 1 0 10.2l-1.3-1.3a5.4 5.4 0 0 0 0-7.6zM5.4 5.4a9.3 9.3 0 0 0 0 13.2l-1.3 1.3a11.2 11.2 0 0 1 0-15.8zM18.6 5.4l1.3-1.3a11.2 11.2 0 0 1 0 15.8l-1.3-1.3a9.3 9.3 0 0 0 0-13.2z"/></svg>Radio</button>
+      <button class="tab" data-i="3"><svg viewBox="0 0 24 24"><path fill-rule="evenodd" d="M7 3h10a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4zm6.6 4.2-.1 6.1a2.2 2.2 0 1 0 1.3 2V9.7l2-.5V7.2zM8 12v1.6h2.2V12z" clip-rule="evenodd"/></svg>Library</button>
+    </div>
+  </nav>
+  <div class="home-ind"></div>
+</main>
+
+<script>
+(() => {
+  const tabs = document.getElementById('tabs'), bar = document.querySelector('.tabbar'), lens = document.getElementById('lens'), lensSh = document.getElementById('lensSh');
+  const btns = [...tabs.querySelectorAll('.tab')], screens = [...document.querySelectorAll('.screen')];
+  // refraction map: capsule signed-distance field -> inward push strongest at the rim (R=x, G=y, 128 = neutral)
+  const isChromium = /Chrome|Chromium|Edg\//.test(navigator.userAgent) && !/Firefox/.test(navigator.userAgent);
+  if(!isChromium) document.documentElement.classList.add('no-svg-refract');
+  const fMap = document.getElementById('lgMap'), fil = document.getElementById('lg'), dR = document.getElementById('dR'), dG = document.getElementById('dG'), dB = document.getElementById('dB');
+  (function buildMap(){
+    const W = 256, Hh = 128, cv = document.createElement('canvas'); cv.width = W; cv.height = Hh;
+    const g = cv.getContext('2d'), im = g.createImageData(W, Hh), r = Hh/2, bz = r*.5;
+    for(let y=0;y<Hh;y++) for(let x=0;x<W;x++){
+      const cx = Math.min(Math.max(x+.5, r), W-r), dx = x+.5-cx, dy = y+.5-r, dist = Math.hypot(dx,dy) || 1e-6;
+      const depth = r - dist; let m = 0;
+      if(depth < bz){ const t = Math.max(depth,0)/bz; m = Math.pow(1-t, 1.7); }
+      const nx = dx/dist, ny = dy/dist, o = (y*W+x)*4;
+      im.data[o]   = 128 - nx*m*127;   // push toward centre -> magnified, bent rim
+      im.data[o+1] = 128 - ny*m*127;
+      im.data[o+2] = 128; im.data[o+3] = 255;
+    }
+    g.putImageData(im,0,0);
+    fMap.setAttribute('href', cv.toDataURL());
+  })();
+
+  // liquid body = two independent edges + a height spring + a press (swell) spring
+  const L = {x:0,v:0}, R = {x:0,v:0}, H = {x:0,v:0}, S = {x:1,v:0,t:1};
+  let idx = 0, dragging = false, moved = false, pointerX = 0, startX = 0, raf = 0, last = 0, tx = 0;
+  const tw = () => tabs.clientWidth / 4;
+  const spring = (o, t, k, c, dt) => { o.v += (-k*(o.x - t) - c*o.v)*dt; o.x += o.v*dt; };
+  const clamp = (v,a,b) => Math.min(Math.max(v,a),b);
+  const buzz = ms => { try{ navigator.vibrate && navigator.vibrate(ms); }catch(e){} };
+
+  function frame(now){
+    const dt = Math.min((now-last)/1000, 1/30) || 1/60; last = now;
+    const w = tw(), h = tabs.clientHeight, bw = w*1.04, restH = h + 18;
+
+    // where the blob wants its centre (finger is rubber-banded past the ends)
+    let cT = idx*w + w/2;
+    if(dragging){
+      const lo = w/2, hi = w*3.5;
+      cT = pointerX < lo ? lo + (pointerX-lo)*.28 : pointerX > hi ? hi + (pointerX-hi)*.28 : pointerX;
+    }
+    const half = bw/2 * S.x;
+    const Lt = cT - half, Rt = cT + half;
+    const cur = (L.x + R.x)/2, d = cT - cur, moving = Math.abs(d) > 1.5;
+    // leading edge is stiff (pulled), trailing edge is soft (drags & snaps back) => liquid stretch
+    let kl = 220, cl = 12, kt = 220, ct = 12;
+    if(moving){
+      if(dragging){ kl = 520; cl = 30; kt = 230; ct = 17; }
+      else        { kl = 330; cl = 17; kt = 105; ct = 8.5; }
+    } else if(dragging){ kl = kt = 420; cl = ct = 26; }
+    const rightLeads = d >= 0;
+    const sub = 4, h_ = dt/sub;
+    for(let i=0;i<sub;i++){
+      spring(R, Rt, rightLeads?kl:kt, rightLeads?cl:ct, h_);
+      spring(L, Lt, rightLeads?kt:kl, rightLeads?ct:cl, h_);
+      const stretch = (R.x - L.x)/(bw*S.x) - 1;                  // >0 elongated, <0 squeezed
+      spring(H, restH*S.x*(1 - clamp(stretch,-.5,1.2)*.30), 230, 10, h_);   // volume-ish: long => thin, jiggles
+      spring(S, S.t, 300, 11, h_);
+    }
+    const width = R.x - L.x, height = H.x, top = h/2 - height/2;
+    lens.style.transform = `translateX(${L.x}px)`;
+    lens.style.width = width + 'px';
+    lens.style.top = top + 'px';
+    lens.style.height = height + 'px';
+    lensSh.style.transform = lens.style.transform; lensSh.style.width = lens.style.width; lensSh.style.top = lens.style.top; lensSh.style.height = lens.style.height;
+    // keep the refraction map glued to the bubble's live size; pressing deepens the bend
+    const bend = height*(.5 + (S.x-1)*1.5);
+    const k = bend/width;
+    dR.setAttribute('scale', k); dG.setAttribute('scale', k*.9); dB.setAttribute('scale', k*.8);
+    // the glass bar itself leans & squishes toward the finger
+    const press = (S.x - 1)/.2;
+    bar.style.transformOrigin = `${(L.x+R.x)/2 + 16}px 50%`;
+    bar.style.transform = `scale(${1 + press*.03 + clamp(Math.abs(R.v+L.v)/(w*60),0,.012)}, ${1 - press*.012})`;
+
+    const alive = dragging || Math.abs(d) > .05 || Math.abs(L.v)+Math.abs(R.v) > .6 || Math.abs(H.v) > .6 || Math.abs(S.x-S.t) > .001 || Math.abs(S.v) > .02;
+    if(alive) raf = requestAnimationFrame(frame); else raf = 0;
+  }
+  const kick = () => { if(!raf){ last = performance.now(); raf = requestAnimationFrame(frame); } };
+
+  function setIdx(i){
+    if(i === idx) return; idx = i; buzz(6);
+    btns.forEach((b,k) => b.classList.toggle('on', k === i));
+    screens.forEach((s,k) => s.classList.toggle('on', k === i));
+  }
+  // tap = a squishy poke: swell, then spring across
+  btns.forEach((b,i) => b.addEventListener('click', () => { if(moved) return; setIdx(i); S.v += 3.2; kick(); }));
+
+  tabs.addEventListener('pointerdown', e => {
+    dragging = true; moved = false; startX = e.clientX; tabs.setPointerCapture(e.pointerId);
+    pointerX = e.clientX - tabs.getBoundingClientRect().left;
+    S.t = 1.2; buzz(10); kick();
+  });
+  tabs.addEventListener('pointermove', e => {
+    if(!dragging) return;
+    if(Math.abs(e.clientX - startX) > 4) moved = true;
+    pointerX = e.clientX - tabs.getBoundingClientRect().left;
+    if(moved) setIdx(clamp(Math.floor(pointerX / tw()), 0, 3));
+    kick();
+  });
+  const end = () => {
+    if(!dragging) return; dragging = false; S.t = 1;
+    const w = tw(), vel = (L.v + R.v)/2, cur = (L.x + R.x)/2;
+    let i = moved ? clamp(Math.floor((cur + vel*.12)/w), 0, 3) : clamp(Math.floor(pointerX/w), 0, 3);  // flick carries it further
+    setIdx(i); S.v += moved ? 1.2 : 2.2; kick();
+    setTimeout(() => moved = false, 0);
+  };
+  tabs.addEventListener('pointerup', end); tabs.addEventListener('pointercancel', end);
+
+  addEventListener('resize', () => { const w = tw(); L.x = idx*w + w/2 - w*.52; R.x = idx*w + w/2 + w*.52; L.v = R.v = 0; kick(); });
+  { const w = tw(); L.x = w/2 - w*.52; R.x = w/2 + w*.52; H.x = tabs.clientHeight + 18; }
+  kick();
+  document.querySelectorAll('.chip').forEach(c => c.addEventListener('click', () => {
+    c.parentElement.querySelectorAll('.chip').forEach(x => x.classList.remove('on')); c.classList.add('on');
+  }));
+})();
+</script>
+</body>
+</html>
